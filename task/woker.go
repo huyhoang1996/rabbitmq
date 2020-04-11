@@ -1,8 +1,9 @@
 package main
 
 import (
-	"fmt"
+	"bytes"
 	"log"
+	"time"
 
 	"github.com/streadway/amqp"
 )
@@ -25,42 +26,40 @@ func Receive() {
 
 	// Create if queue not exist
 	_, err = ch.QueueDeclare(
-		"hello3", // name
-		false,    // durable
-		false,    // delete when unused
-		false,    // exclusive
-		false,    // no-wait
-		nil,      // arguments
+		"new_task", // name
+		false,      // durable
+		false,      // delete when unused
+		false,      // exclusive
+		false,      // no-wait
+		nil,        // arguments
 	)
 	failOnError(err, "Failed to declare a queue")
 
 	msgs, err := ch.Consume(
-		"hello3", // queue
-		"",       // consumer
-		true,     // auto-ack
-		false,    // exclusive
-		false,    // no-local
-		false,    // no-wait
-		nil,      // args
+		"new_task", // queue
+		"",         // consumer
+		true,       // auto-ack
+		false,      // exclusive
+		false,      // no-local
+		false,      // no-wait
+		nil,        // args
 	)
 	failOnError(err, "Failed to register a consumer")
 
 	forever := make(chan bool)
-	fmt.Println("====== ")
-	go func() {
-		fmt.Println("Inside routine ")
 
+	go func() {
 		for d := range msgs {
-			fmt.Println("Inside routine FOR ")
-			fmt.Printf("Received a message: %s", d.Body)
+			log.Printf("Received a message: %s", d.Body)
+			dot_count := bytes.Count(d.Body, []byte("."))
+			t := time.Duration(dot_count)
+			log.Printf("time.Sleep:: ", dot_count)
+
+			time.Sleep(t * time.Second)
+			log.Printf("Done")
 		}
 	}()
-	fmt.Println("====== ")
 
 	log.Printf(" [*] Waiting for messages. To exit press CTRL+C")
 	<-forever
-}
-
-func main() {
-	Receive()
 }

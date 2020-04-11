@@ -1,8 +1,8 @@
 package main
 
 import (
-	"fmt"
 	"log"
+	"strings"
 
 	"github.com/streadway/amqp"
 )
@@ -17,6 +17,16 @@ func failOnErrorSender(err error, msg string) {
 	}
 }
 
+func bodyFrom(args []string) string {
+	var s string
+	if len(args) < 2 {
+		s = "hello"
+	} else {
+		s = strings.Join(args[1:], " ")
+	}
+	return s
+}
+
 func Sender() {
 
 	conn, err := amqp.Dial("amqp://admin:admin@192.168.1.2:5672/")
@@ -27,17 +37,18 @@ func Sender() {
 	failOnErrorSender(err, "Failed to open a channel")
 	defer ch.Close()
 
-	body := "Hello World! ha huy haong 2"
+	body := bodyFrom([]string{"ha ..", "huy ..."})
 	err = ch.Publish(
-		"",       // exchange
-		"hello3", // routing key
-		false,    // mandatory
-		false,    // immediate
+		"",         // exchange
+		"new_task", // routing key
+		false,      // mandatory
+		false,
 		amqp.Publishing{
-			ContentType: "text/plain",
-			Body:        []byte(body),
+			DeliveryMode: amqp.Persistent, // chua hieu
+			ContentType:  "text/plain",
+			Body:         []byte(body),
 		})
-	fmt.Println("====  err", err)
+	log.Printf(" [x] Sent %s", body)
 	failOnErrorSender(err, "Failed to publish a message")
 
 }
