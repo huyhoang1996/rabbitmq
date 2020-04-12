@@ -60,7 +60,3 @@ func Receive() {
 	log.Printf(" [*] Waiting for messages. To exit press CTRL+C")
 	<-forever
 }
-
-func main() {
-	Receive()
-}
