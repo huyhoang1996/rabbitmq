@@ -37,14 +37,14 @@ func Sender() {
 	failOnErrorSender(err, "Failed to open a channel")
 	defer ch.Close()
 
-	body := bodyFrom([]string{"ha ..", "huy ..."})
+	body := bodyFrom([]string{"ha ..", "huy1 ..."})
 	err = ch.Publish(
-		"",         // exchange
-		"new_task", // routing key
-		false,      // mandatory
+		"",             // exchange
+		"task_durable", // routing key
+		false,          // mandatory
 		false,
 		amqp.Publishing{
-			DeliveryMode: amqp.Persistent, // chua hieu
+			DeliveryMode: amqp.Persistent, // Couple with duration
 			ContentType:  "text/plain",
 			Body:         []byte(body),
 		})
